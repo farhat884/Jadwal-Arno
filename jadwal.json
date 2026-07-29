@@ -48,5 +48,10 @@
         "Waktu Input": "29-07-2026 22:26",
         "Detail Perintah": "Jadwal saya apa minggu",
         "Status": "Aktif"
+    },
+    {
+        "Waktu Input": "29-07-2026 22:33",
+        "Detail Perintah": "Jadwalkan saya besok minggu depan",
+        "Status": "Aktif"
     }
 ]
