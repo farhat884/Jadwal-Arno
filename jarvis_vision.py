@@ -15,13 +15,18 @@ import ctypes
 import edge_tts
 import json
 import subprocess  # === [TAMBAHAN]: Untuk menjalankan perintah Git otomatis ===
+from dotenv import load_dotenv
+
+# Muat file .env agar os.getenv bisa membaca kunci API-mu
+load_dotenv()
 
 # =========================================================
 # 0. KONFIGURASI AI LOKAL / CLOUD (Groq API)
 # =========================================================
 from jarvis_groq import GroqJarvis
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "isi_api_key_kamu_lokal_saja")
+# Ubah string di bawah menjadi teks dummy agar aman dari sensor GitHub
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "masukkan_api_key_disini")
 jarvis_brain = GroqJarvis(api_key=GROQ_API_KEY)
 
 def ask_jarvis_ai(user_text, current_emotion="Netral"):
@@ -53,16 +58,21 @@ def push_ke_github():
     threading.Thread(target=task, daemon=True).start()
 
 def simpan_jadwal_otomatis(command_text):
-    """Mencatat jadwal secara otomatis ke file JSON dan push ke GitHub"""
+    """Mencatat jadwal secara otomatis ke file JSON dan push ke GitHub secara aman"""
+    data = []
+    
+    # 1. Baca data lama dengan aman (Cek apakah file ada dan tidak kosong)
     try:
         if os.path.exists(FILE_JADWAL):
             with open(FILE_JADWAL, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        else:
-            data = []
-    except Exception:
+                content = f.read().strip()
+                if content:  # Pastikan file benar-benar ada isinya
+                    data = json.loads(content)
+    except Exception as e:
+        print(f"[JSON Read Warning]: Gagal membaca file lama, membuat list baru -> {e}")
         data = []
 
+    # 2. Tambahkan jadwal baru
     jadwal_baru = {
         "Waktu Input": time.strftime("%d-%m-%Y %H:%M"),
         "Detail Perintah": command_text.capitalize(),
@@ -71,11 +81,17 @@ def simpan_jadwal_otomatis(command_text):
     
     data.append(jadwal_baru)
 
-    # Simpan ke file lokal
-    with open(FILE_JADWAL, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+    # 3. Simpan kembali ke file lokal dengan aman
+    try:
+        with open(FILE_JADWAL, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+            
+        print(f"\n[STREAMLIT SYSTEM]: Data jadwal berhasil dicatat ke '{FILE_JADWAL}'")
         
-    print(f"\n[STREAMLIT SYSTEM]: Data jadwal berhasil dicatat ke '{FILE_JADWAL}'")
+        # 4. Panggil auto push ke GitHub (Cukup dipanggil sekali di sini)
+        push_ke_github()
+    except Exception as e:
+        print(f"[JSON Write Error]: Gagal menyimpan file jadwal -> {e}")
     
     # === PANGGUL AUTO PUSH KE GITHUB ===
     push_ke_github()
