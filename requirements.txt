@@ -7,3 +7,4 @@ SpeechRecognition
 edge-tts
 python-dotenv
 groq
+streamlit-mic-recorder

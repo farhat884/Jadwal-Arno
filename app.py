@@ -12,6 +12,13 @@ import onnxruntime as ort
 import speech_recognition as sr
 import edge_tts
 from dotenv import load_dotenv
+from streamlit_mic_recorder import speech_to_text
+
+# Menggunakan perekam audio langsung dari browser pengguna
+text_from_mic = speech_to_text(language='id', start_prompt="🎙️ Mulai Bicara", stop_prompt="⏹️ Selesai", key='speech')
+
+if text_from_mic:
+    final_input = text_from_mic
 
 # Load Environment Variables
 load_dotenv()
@@ -116,9 +123,12 @@ async def generate_speech_bytes(text):
 def play_speech(text):
     try:
         audio_path = asyncio.run(generate_speech_bytes(text))
-        st.audio(audio_path, format="audio/mp3", autoplay=True)
+        # Buka file audio sebagai bytes agar Streamlit merendernya dengan stabil
+        with open(audio_path, "rb") as f:
+            audio_bytes = f.read()
+        st.audio(audio_bytes, format="audio/mp3", autoplay=True)
     except Exception as e:
-        st.warning(f"Audio Error: {e}")
+        st.warning(f"Sistem Audio Error: {e}")
 
 # =========================================================
 # 4. DETEKSI EMOSI (ONNX)
