@@ -204,15 +204,18 @@ with tab1:
     
     user_voice = None
     with col_mic:
-        if st.button("🎙️ Bicara (Mic)", use_container_width=True):
-            r = sr.Recognizer()
-            with sr.Microphone() as source:
-                st.toast("Mendengarkan...", icon="👂")
-                try:
+        if st.button("🎙️ Bicara (Mic)", width="stretch"):
+            try:
+                r = sr.Recognizer()
+                # Cek apakah PyAudio/Microphone tersedia di sistem
+                with sr.Microphone() as source:
+                    st.toast("Mendengarkan...", icon="👂")
                     audio = r.listen(source, timeout=5, phrase_time_limit=10)
                     user_voice = r.recognize_google(audio, language="id-ID").lower()
-                except Exception as e:
-                    st.error("Tidak dapat menangkap suara.")
+            except AttributeError:
+                st.error("⚠️ Input mikrofon fisik hanya tersedia saat aplikasi dijalankan di Komputer Lokal.")
+            except Exception as e:
+                st.error("Gagal menangkap suara dari mikrofon.")
 
     with col_txt:
         user_text = st.chat_input("Ketik perintah atau pertanyaan untuk JARVIS...")
