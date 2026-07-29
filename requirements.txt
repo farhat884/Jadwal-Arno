@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+onnxruntime
+opencv-python-headless
+SpeechRecognition
+edge-tts
+python-dotenv
+groq
